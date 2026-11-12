@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Repo Radar · 仓库雷达</title>
+<link rel="stylesheet" href="/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>" />
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo">🛰️</span>
+    <div>
+      <h1>Repo Radar · 仓库雷达</h1>
+      <p class="sub">粘贴一个 GitHub 链接，看清：它是什么 · 作者怎么想到的 · 我要怎么用上</p>
+    </div>
+  </div>
+  <div class="top-right">
+    <button id="historyBtn" class="ghost" title="查看历史记录">🕘 历史记录</button>
+    <button id="settingsBtn" class="ghost" title="设置 API Key">⚙️ 设置</button>
+  </div>
+</header>
+
+<main>
+  <section class="search">
+    <div class="searchbar">
+      <input id="urlInput" type="url" placeholder="https://github.com/作者/仓库　或　https://github.com/作者（整个主页）" autocomplete="off" spellcheck="false" />
+      <button id="pasteBtn" class="ghost" title="从剪贴板粘贴">📋 粘贴</button>
+      <button id="goBtn" class="primary">去发现 →</button>
+    </div>
+    <div class="hint">
+      <span id="exampleChip" class="chip">试试：jiamiaomiao029-gif/liushui-skills</span>
+      <span class="tiny">每次「去发现」都会自动存入历史记录</span>
+    </div>
+    <div id="settingsPanel" class="settings hidden">
+      <label>DeepSeek API Key（只存在你本机浏览器；服务端若已配置可留空）
+        <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off" />
+      </label>
+      <label>输出语言
+        <select id="langSelect"><option value="zh">中文</option><option value="en">English</option></select>
+      </label>
+      <label class="check"><input id="forceFresh" type="checkbox" /> 忽略缓存，重新分析（会再消耗一次额度）</label>
+      <p class="tiny">Key 用途：把 README 交给模型做归纳。留空则用服务端 .env.local 里的 key。</p>
+    </div>
+  </section>
+
+  <section id="status" class="status hidden">
+    <div class="spinner"></div>
+    <div>
+      <div id="statusText">正在读取仓库…</div>
+      <div id="elapsed" class="tiny"></div>
+      <ol id="stageList" class="stages"></ol>
+    </div>
+  </section>
+
+  <section id="error" class="error hidden"></section>
+
+  <section id="result" class="hidden">
+    <div class="repobar">
+      <div>
+        <h2 id="repoName"></h2>
+        <p id="repoDesc" class="muted"></p>
+        <div id="repoBadges" class="badges"></div>
+      </div>
+      <div class="repobar-right">
+        <a id="repoLink" class="ghost" target="_blank" rel="noreferrer">在 GitHub 打开 ↗</a>
+        <span id="cacheNote" class="tiny"></span>
+      </div>
+    </div>
+
+    <div id="repoNote" class="note"></div>
+
+    <h3 class="sec-title"><span id="secTitleText">① 仓库里有什么</span> <span class="tiny" id="productCount"></span></h3>
+    <div id="productGrid" class="grid"></div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="one">一句话说清</button>
+      <button class="tab" data-tab="story">作者的来路</button>
+      <button class="tab" data-tab="setup">我要怎么用上</button>
+    </div>
+
+    <div id="panel-one" class="panel">
+      <blockquote id="oneLiner" class="headline"></blockquote>
+      <div class="two-col">
+        <div>
+          <h4>它解决的难题</h4>
+          <div id="problems"></div>
+        </div>
+        <div>
+          <h4>什么人会需要</h4>
+          <div id="whoNeeds"></div>
+        </div>
+      </div>
+      <h4>说给你听</h4>
+      <p id="storyText" class="prose"></p>
+    </div>
+
+    <div id="panel-story" class="panel hidden">
+      <p class="tiny"><span class="quote-mark">原文</span> 是作者仓库里的逐字原话（右侧标了文件路径）；<span class="guess">「琥珀色」</span> 是 AI 根据材料推断的，作者没这么写过，只作参考。</p>
+      <div id="storyStages" class="stages-flow"></div>
+      <div id="aiThread" class="ai-thread hidden"></div>
+    </div>
+
+    <div id="panel-setup" class="panel hidden">
+      <div id="verdict" class="verdict"></div>
+      <div id="machineTuned" class="tiny"></div>
+      <h4>需要准备的工具</h4>
+      <div id="prereq" class="prereq"></div>
+      <h4>按顺序做这些事</h4>
+      <ol id="steps" class="steps"></ol>
+      <h4>容易卡住的地方</h4>
+      <div id="risks" class="risks"></div>
+      <p id="timeNeeded" class="tiny"></p>
+    </div>
+
+    <footer class="foot">
+      <div id="meta" class="tiny"></div>
+      <div class="foot-actions">
+        <button id="pdfBtn" class="primary">下载查阅（PDF）</button>
+        <button id="copyMd" class="ghost">复制为 Markdown</button>
+        <button id="againBtn" class="ghost">重新分析</button>
+      </div>
+    </footer>
+  </section>
+</main>
+
+<div id="historyModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="历史记录">
+  <div class="modal-mask" id="historyMask"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>历史记录 <span id="historyCount" class="tiny"></span></h3>
+      <button id="historyClose" class="ghost">关闭 ✕</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+    <p class="tiny modal-foot">点一条直接打开，不调用模型、不消耗 token。记录会自动保存。</p>
+  </div>
+</div>
+
+<script src="/vendor/html2canvas.min.js"></script>
+<script src="/vendor/jspdf.umd.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

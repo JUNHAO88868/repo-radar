@@ -1,0 +1,28 @@
+{
+  "name": "repo-radar",
+  "version": "1.0.0",
+  "description": "Repo Radar · 仓库雷达 — 粘贴 GitHub 链接，生成人话版仓库仪表盘。Github Dashboard 仪表盘。",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node test/server.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "github",
+    "dashboard",
+    "repository-analysis",
+    "llm",
+    "deepseek",
+    "local-first"
+  ],
+  "author": "Zack Zhang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JUNHAO88868/repo-radar.git"
+  },
+  "license": "MIT"
+}

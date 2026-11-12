@@ -1,0 +1,7 @@
+.env.local
+.env
+.cache/
+node_modules/
+.DS_Store
+我的Mac电脑配置.jpg
+使用说明.md
